@@ -18,9 +18,7 @@ public class JMSConfig {
 	@Bean
 	public ActiveMQConnectionFactory activeMQConnectionFactory() {
 		ActiveMQConnectionFactory confactory = new ActiveMQConnectionFactory();
-
 		confactory.setBrokerURL(brokerURL);
-
 		return confactory;
 	}
 
