@@ -12,8 +12,8 @@ public class JMSConfig {
 	@Value("${activemq.broker-url}")
 	private String brokerURL;
 
-	@Value("${activemq.queue}")
-	private String queue;
+	//@Value("${activemq.queue}")
+	//private String queue;
 
 	@Bean
 	public ActiveMQConnectionFactory activeMQConnectionFactory() {
@@ -28,7 +28,7 @@ public class JMSConfig {
 	public JmsTemplate jmsTemplate() {
 		JmsTemplate jt = new JmsTemplate(activeMQConnectionFactory());
 		jt.setReceiveTimeout(10000);
-		jt.setDefaultDestinationName(queue);
+		//jt.setDefaultDestinationName(queue);
 		return jt;
 	}
 

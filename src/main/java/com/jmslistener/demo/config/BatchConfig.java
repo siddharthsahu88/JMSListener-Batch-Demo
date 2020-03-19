@@ -9,9 +9,11 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.jms.JmsItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
@@ -32,6 +34,9 @@ public class BatchConfig {
 	@Autowired
 	private JmsTemplate jmsTemplate;
 
+	@Value("${activemq.queue}")
+	private String queue;
+
 	@Bean
 	public SimpleJobLauncher jobLauncher() {
 		SimpleJobLauncher launcher = new SimpleJobLauncher();
@@ -42,10 +47,24 @@ public class BatchConfig {
 	@Bean
 	public JmsItemReader<String> jmsItemReader() {
 		JmsItemReader<String> reader = new JmsItemReader<>();
+		jmsTemplate.setDefaultDestinationName(queue);
 		reader.setJmsTemplate(jmsTemplate);
 		return reader;
 	}
 
+	@Bean
+	public ItemProcessor<String, String> jmsItemProcessor() {
+		ItemProcessor<String, String> processor = new ItemProcessor<String, String>() {
+
+			@Override
+			public String process(String item) throws Exception {
+				return item+" afternoon";
+			}
+		};
+		
+		return processor;
+	}
+	
 	@Bean
 	public ItemWriter<String> itemWriter() {
 		ItemWriter<String> writer = new ItemWriter<String>() {
@@ -61,7 +80,7 @@ public class BatchConfig {
 
 	@Bean
 	public Step jmsListenStep() {
-		return steps.get("JmsListenStep").<String, String>chunk(10).reader(jmsItemReader()).writer(itemWriter())
+		return steps.get("jmsListenStep").<String, String>chunk(50).reader(jmsItemReader()).processor(jmsItemProcessor()).writer(itemWriter())
 				.build();
 	}
 
